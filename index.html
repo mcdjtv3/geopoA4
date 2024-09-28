@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quiz : Démarche Marketing & Définition des Marchés</title>
+    <style>
+        body {
+            font-family: 'Mayan', sans-serif;
+            margin: 0;
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            color: #333;
+            text-align: center;
+        }
+        .quiz-container, .summary {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            position: relative;
+            background-image: url('images/back.jpg.webp');
+            background-size: cover;
+            background-position: center;
+        }
+        .question {
+            font-size: 18px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #000;
+        }
+        .choices {
+            list-style: none;
+            padding: 0;
+            text-align: left;
+            margin-left: 20%;
+        }
+        .choices li {
+            margin: 8px 0;
+        }
+        button {
+            margin-top: 20px;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            background-color: #FF0000;
+            color: white;
+            border-radius: 10px;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #CC0000;
+        }
+        .summary {
+            display: none;
+        }
+        .summary ul {
+            list-style: none;
+            padding: 0;
+        }
+        .summary li {
+            text-align: left;
+            margin-left: 20%;
+            margin-bottom: 10px;
+        }
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+        .incorrect {
+            color: red;
+            font-weight: bold;
+        }
+        .score {
+            margin-top: 20px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        @media (max-width: 768px) {
+            .quiz-container, .summary {
+                max-width: 90%;
+                margin: 20px auto;
+                padding: 15px;
+                border-radius: 10px;
+            }
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+        }
+        @media (max-width: 480px) {
+            .quiz-container, .summary {
+                padding: 10px;
+                margin: 10px;
+                border-radius: 10px;
+            }
+            .question {
+                font-size: 16px;
+            }
+            button {
+                font-size: 12px;
+                padding: 6px 12px;
+                border-radius: 10px;
+            }
+        }
+        @media (min-width: 1024px) {
+            .quiz-container, .summary {
+                max-width: 800px;
+                padding: 30px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="quiz-container" id="quiz-container">
+    <h2>QCM ENTRAINEMENT - Territories, Borders, and Resources</h2>
+    <div id="question-container">
+        <!-- Les questions seront affichées ici dynamiquement -->
+    </div>
+    <button id="next-button" onclick="nextQuestion()">Suivant</button>
+</div>
+
+<div class="summary" id="summary">
+    <h3>Récapitulatif</h3>
+    <ul id="summary-list">
+        <!-- Le récapitulatif des réponses sera affiché ici -->
+    </ul>
+    <div class="score" id="score"></div>
+    <button onclick="restartQuiz()">Recommencer</button>
+</div>
+
+<script>
+    const quizData = [
+        { question: "What defines a border in the context of international law?", choices: ["A physical wall separating two countries", "A line that separates one state's territory from the territories of others", "A territorial zone with shared governance between two states", "A neutral zone where no state has sovereignty"], correct: 1 },
+        { question: "What principle is not typically applied to borders?", choices: ["Territorial integrity", "Border inviolability", "Free alteration of borders without agreement", "Agreement-based modification of borders"], correct: 2 },
+        { question: "How can borders be legally delimited?", choices: ["By a single state’s decision", "Through bilateral or multilateral agreements, arbitration, or jurisdictional decisions", "By the United Nations alone", "By military conquest"], correct: 1 },
+        { question: "What is the Montego Bay Treaty of 1982 concerned with?", choices: ["The legal definition of air space", "The laws governing outer space exploration", "The new international laws governing maritime territories and the sea", "The resolution of territorial disputes over land"], correct: 2 },
+        { question: "What are territorial waters as defined by international law?", choices: ["The area 200 miles from the coastline where a state has full sovereignty", "The area 12 miles from the coast where a state has sovereignty over waters and airspace", "The area of the sea beyond 200 miles, considered international waters", "The area within a state’s land territory at low tide"], correct: 1 },
+        { question: "What is an Exclusive Economic Zone (EEZ)?", choices: ["A zone extending 12 miles from the coastline where states can exploit resources", "A zone up to 200 miles from the coast where the coastal state has exploitation rights but no sovereignty over the waters", "A maritime zone controlled by international law for environmental conservation", "A territorial area within a state's internal waters"], correct: 1 },
+        { question: "Which of the following is not a type of territorial area governed by international maritime law?", choices: ["Internal waters", "Territorial waters", "The Exclusive Economic Zone (EEZ)", "Outer space"], correct: 3 },
+        { question: "Why is the delimitation of maritime territories more complex than land borders?", choices: ["Because of the fluid nature of water compared to solid ground", "Because maritime laws are not regulated by the UN", "Because no country is allowed to claim maritime territories", "Because maritime boundaries must be physically marked with walls"], correct: 0 },
+        { question: "Which states refused to sign the Montego Bay Treaty?", choices: ["USA, Turkey, and Israel", "France, China, and Japan", "Germany, Russia, and India", "Brazil, South Korea, and Canada"], correct: 0 },
+        { question: "Where are disputes over maritime boundaries typically settled?", choices: ["At the United Nations General Assembly", "In bilateral meetings between countries", "At the International Court of Justice (ICJ)", "Through private arbitration"], correct: 2 }
+    ];
+
+    let currentQuestionIndex = 0;
+    let selectedAnswers = [];
+
+    function loadQuestion() {
+        const container = document.getElementById('question-container');
+        container.innerHTML = '';
+
+        const questionData = quizData[currentQuestionIndex];
+        const questionElem = document.createElement('div');
+        questionElem.className = 'question';
+        questionElem.textContent = questionData.question;
+
+        const choicesElem = document.createElement('ul');
+        choicesElem.className = 'choices';
+
+        questionData.choices.forEach((choice, index) => {
+            const choiceElem = document.createElement('li');
+            const choiceInput = document.createElement('input');
+            choiceInput.type = 'radio';
+            choiceInput.name = 'choice';
+            choiceInput.value = index;
+            choiceInput.id = `choice${index}`;
+            
+            const choiceLabel = document.createElement('label');
+            choiceLabel.htmlFor = `choice${index}`;
+            choiceLabel.textContent = choice;
+
+            choiceElem.appendChild(choiceInput);
+            choiceElem.appendChild(choiceLabel);
+            choicesElem.appendChild(choiceElem);
+        });
+
+        container.appendChild(questionElem);
+        container.appendChild(choicesElem);
+    }
+
+    function nextQuestion() {
+        const selectedChoice = document.querySelector('input[name="choice"]:checked');
+        if (!selectedChoice) {
+            alert("Veuillez sélectionner une réponse !");
+            return;
+        }
+
+        selectedAnswers.push(parseInt(selectedChoice.value));
+        currentQuestionIndex++;
+
+        if (currentQuestionIndex < quizData.length) {
+            loadQuestion();
+        } else {
+            showSummary();
+        }
+    }
+
+    function showSummary() {
+        document.getElementById('quiz-container').style.display = 'none';
+        const summary = document.getElementById('summary');
+        summary.style.display = 'block';
+
+        const summaryList = document.getElementById('summary-list');
+        summaryList.innerHTML = '';
+
+        let correctAnswers = 0;
+
+        quizData.forEach((q, index) => {
+            const summaryItem = document.createElement('li');
+            summaryItem.innerHTML = `
+                <strong>${q.question}</strong><br>
+                <div style="text-align: left; margin-left: 20%;">
+                    Votre réponse: ${q.choices[selectedAnswers[index]]} - 
+                    ${selectedAnswers[index] === q.correct ? '<span class="correct">Correct</span>' : '<span class="incorrect">Incorrect</span>'}<br>
+                    Bonne réponse: ${q.choices[q.correct]}
+                </div>
+            `;
+            summaryList.appendChild(summaryItem);
+            if (selectedAnswers[index] === q.correct) {
+                correctAnswers++;
+            }
+        });
+
+        document.getElementById('score').textContent = `Score: ${correctAnswers} / ${quizData.length}`;
+    }
+
+    function restartQuiz() {
+        currentQuestionIndex = 0;
+        selectedAnswers = [];
+        document.getElementById('summary').style.display = 'none';
+        document.getElementById('quiz-container').style.display = 'block';
+        loadQuestion();
+    }
+
+    loadQuestion();
+</script>
+
+</body>
+
+</html>
